@@ -33,57 +33,31 @@ public class WuLineDrawer implements LineDrawer {
             y2 = y1;
             y1 = t;
         }
-        drawPoint(steep, x1, y1, rfpart(y1));
-        drawPoint(steep, x2, y2, rfpart(y1));
+
+        drawPoint(steep, x1, y1, rightFloatPart(y1));
+        drawPoint(steep, x2, y2, rightFloatPart(y1));
         float dx = x2 - x1;
         float dy = y2 - y1;
-        float gradient = dy / dx;
+        float gradient = dx == 0 ? 1 : dy / dx;
         float y = y1 + gradient;
         for (int x = x1 + 1; x <= x2 - 1; x++)
         {
-            drawPoint(steep, x, (int)y, rfpart(y));
-            drawPoint(steep, x, (int)y + 1, fpart(y));
+            drawPoint(steep, x, (int)y, rightFloatPart(y));
+            drawPoint(steep, x, (int)y + 1, floatPart(y));
             y += gradient;
         }
     }
 
     void drawPoint(boolean steep, int x, int y, double intensity){
-        double alfaChanel = Math.round(intensity*100.0)/100.0;
-        pd.drawPixel(steep ? y : x, steep ? x : y, steep ? new Color(blend(0xffffff, 0x0000ff, (float) alfaChanel))  : new Color(blend(0xffffff, 0xff0000, (float) alfaChanel)));
+        double alfaChanel = intensity * 255;
+        pd.drawPixel(steep ? y : x, steep ? x : y, new Color(0, 0, 0, (int) alfaChanel));
     }
 
-    private int blend (int a, int b, float ratio) {
-        if (ratio > 1f) {
-            ratio = 1f;
-        } else if (ratio < 0f) {
-            ratio = 0f;
-        }
-
-        float iRatio = 1.0f - ratio;
-
-        int aA = (a >> 24 & 0xff);
-        int aR = ((a & 0xff0000) >> 16);
-        int aG = ((a & 0xff00) >> 8);
-        int aB = (a & 0xff);
-
-        int bA = (b >> 24 & 0xff);
-        int bR = ((b & 0xff0000) >> 16);
-        int bG = ((b & 0xff00) >> 8);
-        int bB = (b & 0xff);
-
-        int A = (int)((aA * iRatio) + (bA * ratio));
-        int R = (int)((aR * iRatio) + (bR * ratio));
-        int G = (int)((aG * iRatio) + (bG * ratio));
-        int B = (int)((aB * iRatio) + (bB * ratio));
-
-        return A << 24 | R << 16 | G << 8 | B;
-    }
-
-    private double fpart (double x){
+    private double floatPart (double x){
         return x-Math.floor(x);
     }
 
-    private double rfpart (double x){
-        return 1-fpart(x);
+    private double rightFloatPart (double x){
+        return 1-floatPart(x);
     }
 }
